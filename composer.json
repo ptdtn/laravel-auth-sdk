@@ -1,0 +1,33 @@
+{
+    "name": "ptdtn/laravel-auth-sdk",
+    "description": "OAuth single sign-on PT DTN accounts",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "PT DTN Developer",
+            "email": "developer@duniateknologinusantara.com"
+        }
+    ],
+    "require": {
+        "php": "^7.4|^8.0",
+        "illuminate/support": "^6|^7|^8|^9",
+        "illuminate/contracts": "^6|^7|^8|^9"
+    },
+    "require-dev": {
+        "laravel/framework": "^8"
+    },
+    "autoload": {
+        "psr-4": {
+            "PTDTN\\Auth\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "PTDTN\\Auth\\AuthProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev"
+}

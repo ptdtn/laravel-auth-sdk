@@ -7,6 +7,7 @@ use Illuminate\Contracts\Auth\Guard as AuthGuard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 final class Guard implements AuthGuard {
     /**
@@ -99,7 +100,7 @@ final class Guard implements AuthGuard {
             $this->setSessions($data);
             return true;
         } else {
-            \Log::error($data);
+            Log::error($data);
         }
         return false;
     }
@@ -124,7 +125,7 @@ final class Guard implements AuthGuard {
             $pTDTNUser = User::createFromJson($response->json());
             $user = $this->provider->retrieveById($pTDTNUser->id);
             if (empty($user)) {
-                $this->provider->signUp($pTDTNUser);
+                $user = $this->provider->signUp($pTDTNUser);
             }
             $this->setUser($user);
             return $this->user;
@@ -147,9 +148,13 @@ final class Guard implements AuthGuard {
         }
     }
 
-    function setUser(Authenticatable $user) {
+    function setUser(?Authenticatable $user) {
         $this->user = $user;
-        $this->loggedOut = false;
+        if (empty($user)) {
+            $this->loggedOut = true;
+        } else {
+            $this->loggedOut = false;
+        }
         return $this;
     }
 
@@ -176,7 +181,7 @@ final class Guard implements AuthGuard {
             $this->loggedOut = true;
             return true;
         } else {
-            \Log::error($response->json());
+            Log::error($response->json());
         }
         return false;
     }
@@ -208,7 +213,7 @@ final class Guard implements AuthGuard {
             $this->setSessions($data);
             return $data;
         } else {
-            \Log::error($data);
+            Log::error($data);
         }
         return false;
     }

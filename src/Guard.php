@@ -127,6 +127,7 @@ final class Guard implements AuthGuard {
             if (empty($user)) {
                 $user = $this->provider->signUp($pTDTNUser);
             }
+            $user->ptdtnUser = $pTDTNUser;
             $this->setUser($user);
             return $this->user;
         } else {

@@ -19,6 +19,10 @@ class User {
     public ?Carbon $updated_at;
     public bool $is_verified;
 
+    public function __toString() {
+        return \json_encode($this);
+    }
+
     static function createFromJson($json) {
         $res = new User();
         $res->id = $json['id'];

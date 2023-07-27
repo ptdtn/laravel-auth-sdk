@@ -98,7 +98,7 @@ final class Guard implements AuthGuard {
         $token = $this->request->session()->get($this->refreshTokenName);
         if (empty($token)) return false;
 
-        $response = $this->jsonRequest()->post($this->getClientConfig('base_url') . '/oauth/token', [
+        $response = $this->jsonRequest()->post($this->config['base_url'] . '/oauth/token', [
             'grant_type' => 'refresh_token',
             'refresh_token' => $token,
             'client_id' => $this->getClientConfig('client_id'),

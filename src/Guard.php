@@ -29,6 +29,12 @@ final class Guard implements AuthGuard {
      * @var bool
      */
     protected $loggedOut = false;
+    /**
+     * Configuration index.
+     *
+     * @var int
+     */
+    protected $clientIndex = 0;
 
     protected Request $request;
     protected string $refreshTokenName;
@@ -36,7 +42,7 @@ final class Guard implements AuthGuard {
     protected string $scopes;
     protected array $config;
 
-    function __construct(UserProvider $provider, Request $request, $config = []) {
+    function __construct(UserProvider $provider, Request $request, $config = [], $clientIndex) {
         $this->request = $request;
         $this->provider = $provider;
         $this->refreshTokenName = 'refresh_token';
@@ -44,10 +50,15 @@ final class Guard implements AuthGuard {
         $this->scopes = PTDTNToken::$scope;
         $this->config = $config;
         $this->user = NULL;
+        $this->clientIndex = $clientIndex;
+    }
+
+    private function getClientConfig($configName) {
+        return $this->config['clients'][$this->clientIndex][$configName];
     }
 
     private function getRedirectUri() {
-        return $this->config['redirect_base_url'] . $this->config['redirect_url'];
+        return $this->getClientConfig('redirect_base_url') . $this->getClientConfig('redirect_url');
     }
 
     private function jsonRequest() {
@@ -87,11 +98,11 @@ final class Guard implements AuthGuard {
         $token = $this->request->session()->get($this->refreshTokenName);
         if (empty($token)) return false;
 
-        $response = $this->jsonRequest()->post($this->config['base_url'] . '/oauth/token', [
+        $response = $this->jsonRequest()->post($this->getClientConfig('base_url') . '/oauth/token', [
             'grant_type' => 'refresh_token',
             'refresh_token' => $token,
-            'client_id' => $this->config['client_id'],
-            'client_secret' => $this->config['secret'],
+            'client_id' => $this->getClientConfig('client_id'),
+            'client_secret' => $this->getClientConfig('secret'),
             'scope' => $this->scopes,
         ]);
 
@@ -189,7 +200,7 @@ final class Guard implements AuthGuard {
 
     function getAuthorizationUrl(string $state) {
         $query = http_build_query([
-            'client_id' => $this->config['client_id'],
+            'client_id' => $this->getClientConfig('client_id'),
             'redirect_uri' => $this->getRedirectUri(),
             'response_type' => 'code',
             'scope' => $this->scopes,
@@ -203,8 +214,8 @@ final class Guard implements AuthGuard {
 
         $response = Http::asForm()->post($this->config['base_url'] . '/oauth/token', [
             'grant_type' => 'authorization_code',
-            'client_id' => $this->config['client_id'],
-            'client_secret' => $this->config['secret'],
+            'client_id' => $this->getClientConfig('client_id'),
+            'client_secret' => $this->getClientConfig('secret'),
             'redirect_uri' => $this->getRedirectUri(),
             'code' => $authCode,
         ]);

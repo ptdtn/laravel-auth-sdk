@@ -21,10 +21,17 @@ Edit your laravel guard configuration in `config/auth.php` to use the provided g
     'web' => [
         'driver' => 'ptdtntoken',
         'provider' => 'users',
+        'client_index' => 0,
     ],
     'api' => [
         'driver' => 'ptdtntoken',
         'provider' => 'users',
+        'client_index' => 0,
+    ],
+    'custom' => [
+        'driver' => 'ptdtntoken',
+        'provider' => 'users',
+        'client_index' => 1,
     ]
 ],
 ``

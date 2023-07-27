@@ -18,12 +18,13 @@ class AuthProvider extends ServiceProvider {
 		$this->mergeConfigFrom($this->configPath(), self::ConfigName);
 
 		Auth::resolved(function ($auth) {
-			$auth->extend('ptdtntoken', function ($app) {
+			$auth->extend('ptdtntoken', function ($app, $name) {
 				$config = $this->app['config']->get(self::ConfigName);
-				$guard = $this->app['config']->get('auth.defaults.guard');
+				$guard = empty($name) ? $this->app['config']->get('auth.defaults.guard') : $name;
 				$provider = $this->app['config']->get('auth.guards.'.$guard.'.provider');
 				$model = $this->app['config']->get('auth.providers.'.$provider.'.model');
-				return new Guard(new UserProvider($model), $app->make('request'), $config);
+				$clientIndex = $this->app['config']->get('auth.guards.'.$guard.'.client_index') ?? 0;
+				return new Guard(new UserProvider($model), $app->make('request'), $config, $clientIndex);
 			});
 		});
 	}

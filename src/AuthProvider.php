@@ -23,8 +23,6 @@ class AuthProvider extends ServiceProvider {
 				$guard = $this->app['config']->get('auth.defaults.guard');
 				$provider = $this->app['config']->get('auth.guards.'.$guard.'.provider');
 				$model = $this->app['config']->get('auth.providers.'.$provider.'.model');
-				$redirectBaseUrl = $this->app['config']->get('app.frontend-url') ?? 'http://localhost:3000';
-				$config['redirect_base_url'] = $redirectBaseUrl;
 				return new Guard(new UserProvider($model), $app->make('request'), $config);
 			});
 		});

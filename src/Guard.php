@@ -125,8 +125,10 @@ final class Guard implements AuthGuard {
             return;
         }
 
-        $token = $this->request->session()->get($this->tokenName);
         $token = $this->request->header('Authorization');
+        if (empty($token)) {
+            $token = $this->request->session()->get($this->tokenName);
+        }
         if (empty($token)) {
             return;
         }

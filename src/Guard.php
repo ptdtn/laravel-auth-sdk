@@ -126,8 +126,12 @@ final class Guard implements AuthGuard {
         }
 
         $token = $this->request->session()->get($this->tokenName);
+        $token = $this->request->header('Authorization');
         if (empty($token)) {
             return;
+        }
+        if (str_starts_with($token, 'Bearer')) {
+            $token = substr($token, 7);
         }
 
         $response = $this->authorizedRequest($token)->get($this->config['base_url'] . '/api/me');

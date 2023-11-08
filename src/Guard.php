@@ -94,8 +94,12 @@ final class Guard implements AuthGuard {
         $this->request->session()->pull($this->refreshTokenName);
     }
 
-    function refreshToken() {
-        $token = $this->request->session()->get($this->refreshTokenName);
+    function refreshToken($token = null) {
+        $isSession = false;
+        if ($token == null) {
+            $isSession = true;
+            $token = $this->request->session()->get($this->refreshTokenName);
+        }
         if (empty($token)) return false;
 
         $response = $this->jsonRequest()->post($this->config['base_url'] . '/oauth/token', [
@@ -108,8 +112,12 @@ final class Guard implements AuthGuard {
 
         $data = $response->json();
         if ($response->status() == 200 && empty($data['error'])) {
-            $this->setSessions($data);
-            return true;
+            if ($isSession) {
+                $this->setSessions($data);
+                return true;
+            } else {
+                return $data;
+            }
         } else {
             Log::error($data);
         }

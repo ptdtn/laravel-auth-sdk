@@ -124,6 +124,19 @@ final class Guard implements AuthGuard {
         return false;
     }
 
+    private function parseUser($json) {
+        if (!empty($json)) {
+            $pTDTNUser = User::createFromJson($json);
+            $user = $this->provider->retrieveById($pTDTNUser->id);
+            if (empty($user)) {
+                $user = $this->provider->signUp($pTDTNUser);
+            }
+            $user->ptdtnUser = $pTDTNUser;
+            return $user;
+        }
+        return null;
+    }
+
     public function user() {
         if ($this->loggedOut) {
             return;
@@ -144,15 +157,8 @@ final class Guard implements AuthGuard {
             $token = substr($token, 7);
         }
 
-        $response = $this->authorizedRequest($token)->get($this->config['base_url'] . '/api/me');
-
-        if ($response->status() == 200) {
-            $pTDTNUser = User::createFromJson($response->json());
-            $user = $this->provider->retrieveById($pTDTNUser->id);
-            if (empty($user)) {
-                $user = $this->provider->signUp($pTDTNUser);
-            }
-            $user->ptdtnUser = $pTDTNUser;
+        $user = $this->getUserFromToken($token);
+        if (!empty($user)) {
             $this->setUser($user);
             return $this->user;
         } else {
@@ -198,16 +204,12 @@ final class Guard implements AuthGuard {
             return false;
         }
 
-        $response = $this->authorizedRequest($token)->get($this->config['base_url'] . '/api/sign-out');
-
-        if ($response->status() == 200) {
+        if ($this->signOutToken($token)) {
             $this->clearSessions();
             $this->user = null;
 
             $this->loggedOut = true;
             return true;
-        } else {
-            Log::error($response->json());
         }
         return false;
     }
@@ -240,6 +242,26 @@ final class Guard implements AuthGuard {
             return $data;
         } else {
             Log::error($data);
+        }
+        return false;
+    }
+
+    function getUserFromToken($accessToken) {
+        $response = $this->authorizedRequest($accessToken)->get($this->config['base_url'] . '/api/me');
+
+        if ($response->status() == 200) {
+            return $this->parseUser($response->json());
+        }
+        return null;
+    }
+
+    function signOutToken($accessToken) {
+        $response = $this->authorizedRequest($accessToken)->get($this->config['base_url'] . '/api/sign-out');
+
+        if ($response->successful()) {
+            return true;
+        } else {
+            Log::error($response->json());
         }
         return false;
     }
